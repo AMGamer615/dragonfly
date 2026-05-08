@@ -49,6 +49,29 @@ func New(br BlockRegistry, r cube.Range) *Chunk {
 	}
 }
 
+// Clone returns a deep copy of the chunk. The returned chunk is a new instance with the same data as the original.
+func (chunk *Chunk) Clone() *Chunk {
+	clone := New(chunk.air, chunk.r)
+	clone.recalculateHeightMap = chunk.recalculateHeightMap
+	clone.heightMap = make(HeightMap, 256)
+	copy(clone.heightMap, chunk.heightMap)
+	for i, sub := range chunk.sub {
+		if sub != nil {
+			clone.sub[i] = sub.Clone()
+		} else {
+			clone.sub[i] = nil
+		}
+	}
+	for i, biome := range chunk.biomes {
+		if biome != nil {
+			clone.biomes[i] = biome.Clone()
+		} else {
+			clone.biomes[i] = nil
+		}
+	}
+	return clone
+}
+
 // Equals returns if the chunk passed is equal to the current one
 func (chunk *Chunk) Equals(c *Chunk) bool {
 	if !chunk.recalculateHeightMap && !c.recalculateHeightMap && !slices.Equal(c.heightMap, chunk.heightMap) {
