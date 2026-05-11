@@ -51,7 +51,7 @@ func New(br BlockRegistry, r cube.Range) *Chunk {
 
 // Clone returns a deep copy of the chunk. The returned chunk is a new instance with the same data as the original.
 func (chunk *Chunk) Clone() *Chunk {
-	clone := New(chunk.air, chunk.r)
+	clone := New(chunk.br, chunk.r)
 	clone.recalculateHeightMap = chunk.recalculateHeightMap
 	clone.heightMap = make(HeightMap, 256)
 	copy(clone.heightMap, chunk.heightMap)
