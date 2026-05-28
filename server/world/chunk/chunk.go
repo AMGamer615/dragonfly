@@ -49,25 +49,22 @@ func New(br BlockRegistry, r cube.Range) *Chunk {
 	}
 }
 
-// Clone returns a deep copy of the chunk. The returned chunk is a new instance with the same data as the original.
+// Clone returns an independent copy of the Chunk.
 func (chunk *Chunk) Clone() *Chunk {
-	clone := New(chunk.br, chunk.r)
-	clone.recalculateHeightMap = chunk.recalculateHeightMap
-	clone.heightMap = make(HeightMap, 256)
-	copy(clone.heightMap, chunk.heightMap)
-	for i, sub := range chunk.sub {
-		if sub != nil {
-			clone.sub[i] = sub.Clone()
-		} else {
-			clone.sub[i] = nil
-		}
+	clone := &Chunk{
+		r:                    chunk.r,
+		br:                   chunk.br,
+		air:                  chunk.air,
+		recalculateHeightMap: chunk.recalculateHeightMap,
+		heightMap:            slices.Clone(chunk.heightMap),
+		sub:                  make([]*SubChunk, len(chunk.sub)),
+		biomes:               make([]*PalettedStorage, len(chunk.biomes)),
 	}
-	for i, biome := range chunk.biomes {
-		if biome != nil {
-			clone.biomes[i] = biome.Clone()
-		} else {
-			clone.biomes[i] = nil
-		}
+	for i, sub := range chunk.sub {
+		clone.sub[i] = sub.Clone()
+	}
+	for i, biomes := range chunk.biomes {
+		clone.biomes[i] = biomes.Clone()
 	}
 	return clone
 }

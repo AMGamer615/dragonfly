@@ -2,6 +2,7 @@ package chunk
 
 import (
 	"bytes"
+	"slices"
 	"unsafe"
 )
 
@@ -59,6 +60,11 @@ func emptyStorage(v uint32) *PalettedStorage {
 	return newPalettedStorage([]uint32{}, newPalette(0, []uint32{v}))
 }
 
+// Clone returns an independent copy of the PalettedStorage.
+func (storage *PalettedStorage) Clone() *PalettedStorage {
+	return newPalettedStorage(slices.Clone(storage.indices), storage.palette.Clone())
+}
+
 // Palette returns the Palette of the PalettedStorage.
 func (storage *PalettedStorage) Palette() *Palette {
 	return storage.palette
@@ -79,17 +85,6 @@ func (storage *PalettedStorage) Set(x, y, z byte, v uint32) {
 		index = storage.addNew(v)
 	}
 	storage.setPaletteIndex(x&15, y&15, z&15, uint16(index))
-}
-
-// Clone creates a deep copy of the PalettedStorage.
-func (storage *PalettedStorage) Clone() *PalettedStorage {
-	if storage == nil {
-		return nil
-	}
-	newPallete := storage.palette.Clone()
-	newIndices := make([]uint32, len(storage.indices))
-	copy(newIndices, storage.indices)
-	return newPalettedStorage(newIndices, newPallete)
 }
 
 // Equal checks if two PalettedStorages are equal value wise. False is returned
@@ -175,7 +170,7 @@ func (storage *PalettedStorage) resize(newPaletteSize paletteSize) {
 // relatively heavy task which should only happen right before the sub chunk holding this PalettedStorage is
 // saved to disk. compact also shrinks the palette size if possible.
 func (storage *PalettedStorage) compact() {
-	if storage.palette == nil || storage.palette.Len() == 0 {
+	if storage.palette.Len() == 0 {
 		return
 	}
 	if storage.palette.Len() == 1 {
